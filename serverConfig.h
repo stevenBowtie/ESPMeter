@@ -21,6 +21,10 @@ void init_server_callbacks(){
       request->send(SPIFFS,"/spiffs.htm", "text/html");
   });
 
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS,"/favicon.ico", "image/x-icon");
+  });
+
   // Send a GET request to <IP>/get?message=<message>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
       String message;
