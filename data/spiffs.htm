@@ -1,6 +1,27 @@
 <html>
-<head></head>
-<body style="background-color:#555555; font-family:sans-serif">
+<head>
+  <script type="text/javascript">
+    function updateReading(){
+      const Http = new XMLHttpRequest();
+      const url='/reading';
+      Http.open("GET", url);
+      Http.send();
+
+      Http.onreadystatechange = (e) => {
+        try{
+          parsed=JSON.parse(Http.responseText);
+          document.getElementById('v1').innerHTML=parsed.readings[0];
+          console.log(parsed.readings[0]);
+        }
+        catch(err){}
+
+      }
+    }
+  </script>
+</head>
+<body style="background-color:#555555; font-family:sans-serif" onLoad="setInterval(updateReading, 500)">
 <h1 center>ESPMeter</h1>
+<h2>V1: <a id="v1"></a></h2>
+<input type="button" value="Update" onClick="updateReading()" />
 </body>
 </html>

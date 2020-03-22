@@ -29,7 +29,7 @@ void init_server_callbacks(){
   server.on("/reading", HTTP_GET, [](AsyncWebServerRequest *request){
       String message;
       message=analogAvg;
-      request->send(200, "text/json", "{readings:["+message+"]}");
+      request->send(200, "text/json", "{\"readings\":["+message+"];}");
   });
 
   // Send a GET request to <IP>/get?message=<message>
