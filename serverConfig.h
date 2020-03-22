@@ -3,6 +3,7 @@
 #endif
 #include <WiFi.h>
 #include <AsyncTCP.h>
+#include <SPIFFS.h>
 #ifndef AsyncWebServer
 #include <ESPAsyncWebServer.h>
 #endif
@@ -32,6 +33,18 @@ void init_server_callbacks(){
   });
 
   // Send a POST request to <IP>/post with a form field message set to <message>
+  server.on("/spiffs", HTTP_GET, [](AsyncWebServerRequest *request){
+      String message;
+      File file = SPIFFS.open("/spiffs");
+      if(!file){ message="Failed to open file for reading"; }
+
+      while(file.available()){
+        message.concat( file.read() );
+      }
+      file.close();
+      request->send(200, "text/plain", "Hello, POST: " + message);
+  });
+
   server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
       String message;
       if (request->hasParam(PARAM_MESSAGE, true)) {
@@ -41,7 +54,7 @@ void init_server_callbacks(){
       }
       request->send(200, "text/plain", "Hello, POST: " + message);
   });
-
+  
   server.onNotFound(notFound);
   Serial.println("Server Configured");
 }
