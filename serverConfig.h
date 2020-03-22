@@ -11,6 +11,7 @@
 const char* PARAM_MESSAGE = "message";
 
 AsyncWebServer server(80);
+extern int analogAvg;
 
 void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
@@ -23,6 +24,12 @@ void init_server_callbacks(){
 
   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(SPIFFS,"/favicon.ico", "image/x-icon");
+  });
+
+  server.on("/reading", HTTP_GET, [](AsyncWebServerRequest *request){
+      String message;
+      message=analogAvg;
+      request->send(200, "text/json", "{readings:["+message+"]}");
   });
 
   // Send a GET request to <IP>/get?message=<message>
