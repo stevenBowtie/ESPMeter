@@ -17,6 +17,7 @@ void setup() {
 
     init_server_callbacks();
     server.begin();
+    print_spiffs();
 }
 
 void loop() {
