@@ -16,7 +16,7 @@ const char* PARAM_MESSAGE = "message";
 AsyncWebServer server(80);
 extern int analogAvg;
 
-String convertPointer(char *startingPointer){
+String convertPointer(const char *startingPointer){
   String conversion;
   while(*startingPointer){
     conversion.concat(*startingPointer);
@@ -45,10 +45,12 @@ void init_server_callbacks(){
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    Serial.println(wifi_mode);
     String message;
     message.concat("Wifi mode: ");
-    message.concat(const * strcpy(convertPointer(wifi_mode)) );
-    message.concat("");
+    message.concat( wifi_mode );
+    Serial.println(message);
+    Serial.println(wifi_mode);
     request->send(200, "text/plain", "Configuration \n" + message);
   });
 
