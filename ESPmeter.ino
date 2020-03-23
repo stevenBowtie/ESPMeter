@@ -17,15 +17,19 @@ void setup() {
   IPAddress myIP = WiFi.softAPIP();
 
   load_config();   
-  init_server_callbacks();
+  Serial.println(wifi_mode);
+  Serial.println(wifi_mode);
   server.begin();
+  Serial.println(wifi_mode);
   print_spiffs();
+  init_server_callbacks();
 }
 
 void loop() {
   analogAvg=((analogAvg*avg_factor)+analogRead(A4))/(avg_factor+1);
   if( millis() % 1000 == 1 ){
     if( flag ){
+      Serial.println(wifi_mode);
       Serial.println( analogAvg );
       flag = 0;
     }

@@ -8,6 +8,7 @@
 const char * wifi_mode;
 const char * wifiAPssid;
 const char * wifiAPpass;
+StaticJsonDocument<256> cfg;
 
 bool load_config(){
   Serial.println("Loading Config...");
@@ -20,7 +21,7 @@ bool load_config(){
     Serial.println("Failed to open config"); 
     return 0; 
   } 
-  DynamicJsonDocument cfg(200);
+  //DynamicJsonDocument cfg(200);
   DeserializationError error = deserializeJson(cfg, file);
   if (error){ Serial.println(error.c_str()); }
   wifi_mode = cfg["wifi_mode"];
