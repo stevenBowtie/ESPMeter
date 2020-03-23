@@ -1,0 +1,41 @@
+<html>
+<head>
+  <script type="text/javascript">
+    function updateReading(){
+      const Http = new XMLHttpRequest();
+      const url='/reading';
+      Http.open("GET", url);
+      Http.send();
+
+      Http.onreadystatechange = (e) => {
+        try{
+          parsed=JSON.parse(Http.responseText);
+          document.getElementById('v1').innerHTML=parsed.readings[0];
+          console.log(parsed.readings[0]);
+        }
+        catch(err){}
+      }
+    }
+    function readoutSettings(){
+      settings={"wifi_mode":"sta","wifiAPssid":"ESPMeter","wifiAPpass":"nopassword"};
+      document.getElementById(settings.wifi_mode).setAttribute("selected","");
+      document.getElementById("wifiAPssid").value=settings.wifiAPssid;
+      document.getElementById("wifiAPpass").value=settings.wifiAPpass;
+    }
+  </script>
+</head>
+<body style="background-color:#555555; font-family:sans-serif" onLoad="readoutSettings()">
+  <h1 center>ESPMeter</h1>
+  <h2>Configuration</h2>
+  <table>
+  <tr><td>Mode: </td><td><select id="wifi_mode">
+    <option value=""></option>
+    <option id="sta" value="sta">Client</option>
+    <option id="ap" value="ap">Access Point</option>
+  </select></td></tr>
+  <tr><td>AP SSID: </td><td><input type="text" id="wifiAPssid" />
+  <tr><td>AP Pass: </td><td><input type="text" id="wifiAPpass" />
+  </table>
+  <input type="button" value="Update" onClick="updateReading()" />
+</body>
+</html>
