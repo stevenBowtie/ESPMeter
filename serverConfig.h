@@ -16,6 +16,15 @@ const char* PARAM_MESSAGE = "message";
 AsyncWebServer server(80);
 extern int analogAvg;
 
+String convertPointer(char *startingPointer){
+  String conversion;
+  while(*startingPointer){
+    conversion.concat(*startingPointer);
+    startingPointer++;
+  }
+  return conversion;
+}
+
 void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
 }
@@ -36,7 +45,11 @@ void init_server_callbacks(){
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", wifi_mode);
+    String message;
+    message.concat("Wifi mode: ");
+    message.concat( wifi_mode );
+    message.concat("");
+    request->send(200, "text/plain", "Configuration \n" + message);
   });
 
   // Send a GET request to <IP>/get?message=<message>
