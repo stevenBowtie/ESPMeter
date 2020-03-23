@@ -1,30 +1,32 @@
 <html>
 <head>
   <script type="text/javascript">
-    function updateReading(){
+    function getJSONconfig(){
       const Http = new XMLHttpRequest();
-      const url='/reading';
+      const url='/config.json';
       Http.open("GET", url);
       Http.send();
 
       Http.onreadystatechange = (e) => {
         try{
-          parsed=JSON.parse(Http.responseText);
-          document.getElementById('v1').innerHTML=parsed.readings[0];
-          console.log(parsed.readings[0]);
+          console.log(Http.responseText);
+          readoutSettings(JSON.parse(Http.responseText));
         }
-        catch(err){}
+        catch(err){
+          console.log(err);
+        }
       }
     }
-    function readoutSettings(){
-      settings={"wifi_mode":"sta","wifiAPssid":"ESPMeter","wifiAPpass":"nopassword"};
+
+    function readoutSettings(settings){
+      //settings={"wifi_mode":"sta","wifiAPssid":"ESPMeter","wifiAPpass":"nopassword"};
       document.getElementById(settings.wifi_mode).setAttribute("selected","");
       document.getElementById("wifiAPssid").value=settings.wifiAPssid;
       document.getElementById("wifiAPpass").value=settings.wifiAPpass;
     }
   </script>
 </head>
-<body style="background-color:#555555; font-family:sans-serif" onLoad="readoutSettings()">
+<body style="background-color:#555555; font-family:sans-serif" onLoad="getJSONconfig()">
   <h1 center>ESPMeter</h1>
   <h2>Configuration</h2>
   <table>
@@ -36,6 +38,6 @@
   <tr><td>AP SSID: </td><td><input type="text" id="wifiAPssid" />
   <tr><td>AP Pass: </td><td><input type="text" id="wifiAPpass" />
   </table>
-  <input type="button" value="Update" onClick="updateReading()" />
+  <input type="button" value="Update" onClick="getJSONconfig()" />
 </body>
 </html>

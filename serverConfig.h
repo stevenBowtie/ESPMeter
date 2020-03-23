@@ -45,11 +45,8 @@ void init_server_callbacks(){
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    String message;
-    message.concat("Wifi mode: ");
-    message.concat( wifi_mode );
-    message.concat("");
-    request->send(200, "text/plain", "Configuration \n" + message);
+    Serial.println("/config requested");
+    request->send(SPIFFS,"/config.htm", "text/html");
   });
 
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
