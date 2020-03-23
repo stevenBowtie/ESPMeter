@@ -7,11 +7,23 @@
 #ifndef AsyncWebServer
 #include <ESPAsyncWebServer.h>
 #endif
+#ifndef config_h
+#include "config.h"
+#endif
 
 const char* PARAM_MESSAGE = "message";
 
 AsyncWebServer server(80);
 extern int analogAvg;
+
+String convertPointer(char *startingPointer){
+  String conversion;
+  while(*startingPointer){
+    conversion.concat(*startingPointer);
+    startingPointer++;
+  }
+  return conversion;
+}
 
 void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
@@ -30,6 +42,14 @@ void init_server_callbacks(){
       String message;
       message=analogAvg;
       request->send(200, "text/json", "{\"readings\":["+message+"];}");
+  });
+
+  server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    String message;
+    message.concat("Wifi mode: ");
+    message.concat(const * strcpy(convertPointer(wifi_mode)) );
+    message.concat("");
+    request->send(200, "text/plain", "Configuration \n" + message);
   });
 
   // Send a GET request to <IP>/get?message=<message>
@@ -87,3 +107,4 @@ void print_spiffs(){
       file = root.openNextFile();
   }
 }
+
