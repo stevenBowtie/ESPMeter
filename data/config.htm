@@ -1,6 +1,7 @@
 <html>
 <head>
   <script type="text/javascript">
+    config=JSON.parse("{}");
     function getJSONconfig(){
       const Http = new XMLHttpRequest();
       const url='/config.json';
@@ -15,6 +16,20 @@
         catch(err){
           console.log(err);
         }
+      }
+    }
+    
+    function sendJSONconfig(){
+      config.wifi_mode = document.getElementById("wifi_mode").value;
+      config.wifiAPssid = document.getElementById("wifiAPssid").value;
+      config.wifiAPpass = document.getElementById("wifiAPpass").value;
+      jsonString=JSON.stringify(config);
+      req = new XMLHttpRequest();
+      url = '/save';
+      req.open("POST",url);
+      req.send(jsonString);
+      req.onreadystatechange = (e) => {
+        console.log(req.responseText);
       }
     }
 
@@ -38,6 +53,7 @@
   <tr><td>AP SSID: </td><td><input type="text" id="wifiAPssid" />
   <tr><td>AP Pass: </td><td><input type="text" id="wifiAPpass" />
   </table>
+  <input type="button" value="Save" onClick="sendJSONconfig()" />
   <input type="button" value="Update" onClick="getJSONconfig()" />
 </body>
 </html>
