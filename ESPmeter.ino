@@ -5,7 +5,8 @@
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
 const char* sta_ssid = "PWNZ0RZ";
-const char* sta_pass = "supersecretpassword";
+//const char* sta_pass = "supersecretpassword";
+#include "password.h"
 
 int avg_factor = 1000;
 int analogAvg = 0;
