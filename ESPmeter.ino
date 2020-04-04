@@ -23,12 +23,14 @@ ADS1115 adc(ADS1115_DEFAULT_ADDRESS);
 const int ads_SDA = 14;
 const int ads_SCL = 27;
 const int alertReadyPin = 26;
-volatile bool rdy_state = 1;
+bool rdy_state = 1;
 float reading = 0;
 
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
 const uint8_t muxBits[] = { ADS1115_MUX_P0_NG, ADS1115_MUX_P1_NG, ADS1115_MUX_P2_NG, ADS1115_MUX_P3_NG };
+
+unsigned long cycle_count = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -49,12 +51,6 @@ void setup() {
   //ADC config
   Wire.begin( ads_SDA, ads_SCL );
   adc.initialize();
-  adc.setMode(ADS1115_MODE_SINGLESHOT);
-  adc.setRate(ADS1115_RATE_860);
-  adc.setGain(ADS1115_PGA_1P024);
-  adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
-  adc.setConversionReadyPinMode();
-  adc.setComparatorPolarity(0);
   #ifdef ADS1115_SERIAL_DEBUG
   adc.showConfigRegister();
   Serial.print("HighThreshold="); Serial.println(adc.getHighThreshold(),BIN);
@@ -69,9 +65,7 @@ void loop() {
   ADCpoll(); 
   if( millis() % 1000 == 1 ){
     if( flag ){
-  Serial.print("STA: ");
-  Serial.println(WiFi.localIP());
-      Serial.println( analogAvg );
+     setADCconfig(); 
       flag = 0;
     }
   }
@@ -83,18 +77,29 @@ void rdy_interrupt(){
 }
 
 void ADCpoll(){       
-  if(rdy_state){
+  if(rdy_state || cycle_count>1000){
     rdy_state = 0;
     ads_readings[current_channel] = adc.getMilliVolts(false);
+    current_channel = (current_channel+1)%4;
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
-    current_channel = (current_channel+1)%3;
+  //Serial.println(current_channel);
 
-  for(int i=0; i<4; i++){
-    Serial.print(ads_readings[i]);
-    Serial.print(",");
+    for(int i=0; i<4; i++){
+      Serial.print(ads_readings[i]);
+      Serial.print(",");
+    }
+  Serial.println(cycle_count);
+  cycle_count=0;
   }
-  Serial.println("");
+  cycle_count++;
+}
 
-  }
+void setADCconfig(){
+  adc.setMode(ADS1115_MODE_SINGLESHOT);
+  adc.setRate(ADS1115_RATE_860);
+  adc.setGain(ADS1115_PGA_1P024);
+  adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
+  adc.setConversionReadyPinMode();
+  adc.setComparatorPolarity(0);
 }
