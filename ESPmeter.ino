@@ -23,9 +23,12 @@ ADS1115 adc(ADS1115_DEFAULT_ADDRESS);
 const int ads_SDA = 14;
 const int ads_SCL = 27;
 const int alertReadyPin = 26;
-volatile bool rdy_state = 0;
+volatile bool rdy_state = 1;
 float reading = 0;
 
+uint8_t current_channel = 0;
+float ads_readings[] = { 0, 0, 0, 0 };
+const uint8_t muxBits[] = { ADS1115_MUX_P0_NG, ADS1115_MUX_P1_NG, ADS1115_MUX_P2_NG, ADS1115_MUX_P3_NG };
 
 void setup() {
   Serial.begin(115200);
@@ -75,41 +78,23 @@ void loop() {
   else{ flag = 1; }
 }
 
-void pollAlertReadyPin() {
-  while( !rdy_state ){
-  }
-  reading = adc.getMilliVolts(false);
-  rdy_state = 0;
-}
-
 void rdy_interrupt(){
   rdy_state = 1;
 }
 
-void ADCpoll(){
-       
-    // The below method sets the mux and gets a reading.
-    adc.setMultiplexer(ADS1115_MUX_P0_NG);
+void ADCpoll(){       
+  if(rdy_state){
+    rdy_state = 0;
+    ads_readings[current_channel] = adc.getMilliVolts(false);
+    adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
-    pollAlertReadyPin();
-    Serial.print("A0: "); 
-    Serial.print(reading);    
+    current_channel = (current_channel+1)%3;
 
-    adc.setMultiplexer(ADS1115_MUX_P1_NG);
-    //adc.triggerConversion();
-    pollAlertReadyPin();
-    Serial.print(",A1: "); 
-    Serial.print(reading);
-    
-    adc.setMultiplexer(ADS1115_MUX_P2_NG);
-    //adc.triggerConversion();
-    pollAlertReadyPin();
-    Serial.print(",A2: "); 
-    Serial.print(reading);
-    
-    adc.setMultiplexer(ADS1115_MUX_P3_NG);
-    //adc.triggerConversion();
-    pollAlertReadyPin();
-    Serial.print(",A3: "); 
-    Serial.println(reading); 
+  for(int i=0; i<4; i++){
+    Serial.print(ads_readings[i]);
+    Serial.print(",");
+  }
+  Serial.println("");
+
+  }
 }
