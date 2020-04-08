@@ -14,7 +14,7 @@
 const char* PARAM_MESSAGE = "message";
 
 AsyncWebServer server(80);
-extern int analogAvg;
+extern long chan0;
 
 String convertPointer(char *startingPointer){
   String conversion;
@@ -40,7 +40,7 @@ void init_server_callbacks(){
 
   server.on("/reading", HTTP_GET, [](AsyncWebServerRequest *request){
       String message;
-      message=analogAvg;
+      message=chan0;
       request->send(200, "text/json", "{\"readings\":["+message+"]}");
   });
 

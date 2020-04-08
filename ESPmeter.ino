@@ -14,8 +14,9 @@ const char* sta_ssid = "PWNZ0RZ";
 //const char* sta_pass = "supersecretpassword";
 #include "password.h"
 
-int avg_factor = 1000;
-int analogAvg = 0;
+int avg_factor = 60;
+float analogAvg = 0;
+long chan0 = 0;
 
 byte flag = 1;
 
@@ -25,6 +26,7 @@ const int ads_SCL = 27;
 const int alertReadyPin = 26;
 bool rdy_state = 1;
 float reading = 0;
+float thisSample;
 
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
@@ -61,7 +63,8 @@ void setup() {
 }
 
 void loop() {
-  analogAvg=((analogAvg*avg_factor)+analogRead(A4))/(avg_factor+1);
+  //analogAvg=((analogAvg*avg_factor)+analogRead(A4))/(avg_factor+1);
+  chan0 =sqrt(ads_readings[0])-1648;
   ADCpoll(); 
   if( millis() % 1000 == 1 ){
     if( flag ){
@@ -79,14 +82,17 @@ void rdy_interrupt(){
 void ADCpoll(){       
   if(rdy_state || cycle_count>1000){
     rdy_state = 0;
-    ads_readings[current_channel] = adc.getMilliVolts(false);
-    current_channel = (current_channel+1)%4;
+    thisSample = adc.getMilliVolts(false);
+    analogAvg = ads_readings[current_channel];
+    ads_readings[current_channel] = 
+      ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
+    //current_channel = (current_channel+1)%4;
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
   //Serial.println(current_channel);
 
     for(int i=0; i<4; i++){
-      Serial.print(ads_readings[i]);
+      Serial.print(sqrt(ads_readings[i]));
       Serial.print(",");
     }
   Serial.println(cycle_count);
@@ -98,7 +104,7 @@ void ADCpoll(){
 void setADCconfig(){
   adc.setMode(ADS1115_MODE_SINGLESHOT);
   adc.setRate(ADS1115_RATE_860);
-  adc.setGain(ADS1115_PGA_1P024);
+  adc.setGain(ADS1115_PGA_4P096);
   adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
   adc.setConversionReadyPinMode();
   adc.setComparatorPolarity(0);
