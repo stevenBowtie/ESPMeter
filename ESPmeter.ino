@@ -10,11 +10,11 @@
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
-const char* sta_ssid = "PWNZ0RZ";
+const char* sta_ssid = "CMIWIFI";
 //const char* sta_pass = "supersecretpassword";
 #include "password.h"
 
-int avg_factor = 60;
+int avg_factor = 10;
 float analogAvg = 0;
 long chan0 = 0;
 
@@ -52,14 +52,16 @@ void setup() {
 
   //ADC config
   Wire.begin( ads_SDA, ads_SCL );
+  pinMode(alertReadyPin,INPUT_PULLUP);
+  attachInterrupt( alertReadyPin, rdy_interrupt, RISING );
   adc.initialize();
+  setADCconfig(); 
   #ifdef ADS1115_SERIAL_DEBUG
   adc.showConfigRegister();
-  Serial.print("HighThreshold="); Serial.println(adc.getHighThreshold(),BIN);
-  Serial.print("LowThreshold="); Serial.println(adc.getLowThreshold(),BIN);
+  Serial.print("HighThreshold="); Serial.println(adc.getHighThreshold());
+  Serial.print("LowThreshold="); Serial.println(adc.getLowThreshold());
   #endif
-  pinMode(alertReadyPin,INPUT_PULLUP);
-  attachInterrupt( alertReadyPin, rdy_interrupt, FALLING );
+  adc.triggerConversion();
 }
 
 void loop() {
@@ -68,8 +70,12 @@ void loop() {
   ADCpoll(); 
   if( millis() % 1000 == 1 ){
     if( flag ){
-     setADCconfig(); 
       flag = 0;
+      adc.showConfigRegister();
+      adc.setLowThreshold(0);
+      Serial.println(adc.getLowThreshold());
+      adc.setHighThreshold(32768);
+      Serial.println(adc.getHighThreshold());
     }
   }
   else{ flag = 1; }
@@ -86,6 +92,7 @@ void ADCpoll(){
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
+    //setADCconfig();
     //current_channel = (current_channel+1)%4;
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
@@ -103,9 +110,9 @@ void ADCpoll(){
 
 void setADCconfig(){
   adc.setMode(ADS1115_MODE_SINGLESHOT);
-  adc.setRate(ADS1115_RATE_860);
+  adc.setRate(ADS1115_RATE_8);
   adc.setGain(ADS1115_PGA_4P096);
   adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
+  adc.setComparatorPolarity(1);
   adc.setConversionReadyPinMode();
-  adc.setComparatorPolarity(0);
 }
