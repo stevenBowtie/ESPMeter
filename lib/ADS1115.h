@@ -136,6 +136,9 @@ class ADS1115 {
 
         void initialize();
         bool testConnection();
+        
+        //Stored config
+        uint16_t configState;
 
         // SINGLE SHOT utilities
         bool pollConversion(uint16_t max_retries);
@@ -179,6 +182,11 @@ class ADS1115 {
         uint8_t getComparatorQueueMode();
         void setComparatorQueueMode(uint8_t mode);
         void setConversionReadyPinMode();
+
+        //Modifying configuration bits
+        void setBit( uint8_t * configState, uint8_t bitNum, uint8_t data );
+        void setBits(uint8_t * configState, uint8_t bitStart, uint8_t length, uint8_t data);
+        void setBitsW( uint8_t * configState, uint8_t bitStart, uint8_t length, uint16_t data);
 
         // *_THRESH registers
         int16_t getLowThreshold();

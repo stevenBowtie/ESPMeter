@@ -653,3 +653,39 @@ void ADS1115::showConfigRegister() {
     #endif
 };
 
+void ADS1115::setBit( uint8_t * configState, uint8_t bitNum, uint8_t data ){
+    *configState = (data != 0) ? (*configState | (1 << bitNum)) : (*configState & ~(1 << bitNum));
+}
+
+void ADS1115::setBits(uint8_t * configState, uint8_t bitStart, uint8_t length, uint8_t data) {
+    //      010 value to write
+    // 76543210 bit numbers
+    //    xxx   args: bitStart=4, length=3
+    // 00011100 mask byte
+    // 10101111 original value (sample)
+    // 10100011 original & ~mask
+    // 10101011 masked | value
+    uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
+    data <<= (bitStart - length + 1); // shift data into correct position
+    data &= mask; // zero all non-important bits in data
+    *configState &= ~(mask); // zero all important bits in existing byte
+    *configState |= data; // combine data with existing byte
+}
+
+void ADS1115::setBitsW( uint8_t * configState, uint8_t bitStart, uint8_t length, uint16_t data) {
+    //              010 value to write
+    // fedcba9876543210 bit numbers
+    //    xxx           args: bitStart=12, length=3
+    // 0001110000000000 mask word
+    // 1010111110010110 original value (sample)
+    // 1010001110010110 original & ~mask
+    // 1010101110010110 masked | value
+    uint16_t mask = ((1 << length) - 1) << (bitStart - length + 1);
+    data <<= (bitStart - length + 1); // shift data into correct position
+    data &= mask; // zero all non-important bits in data
+    *configState &= ~(mask); // zero all important bits in existing word
+    *configState |= data; // combine data with existing word
+}
+
+
+
