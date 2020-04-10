@@ -14,6 +14,8 @@ const char* sta_ssid = "CMIWIFI";
 //const char* sta_pass = "supersecretpassword";
 #include "password.h"
 
+#define HBpin  5
+bool HB = 0;
 int avg_factor = 10;
 float analogAvg = 0;
 long chan0 = 0;
@@ -35,6 +37,7 @@ const uint8_t muxBits[] = { ADS1115_MUX_P0_NG, ADS1115_MUX_P1_NG, ADS1115_MUX_P2
 unsigned long cycle_count = 0;
 
 void setup() {
+  pinMode( HBpin, OUTPUT );
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(sta_ssid,sta_pass);
@@ -51,6 +54,7 @@ void setup() {
   init_server_callbacks();
 
   //ADC config
+  resetI2C();
   Wire.begin( ads_SDA, ads_SCL );
   pinMode(alertReadyPin,INPUT_PULLUP);
   attachInterrupt( alertReadyPin, rdy_interrupt, RISING );
@@ -68,14 +72,19 @@ void loop() {
   //analogAvg=((analogAvg*avg_factor)+analogRead(A4))/(avg_factor+1);
   chan0 =sqrt(ads_readings[0])-1648;
   ADCpoll(); 
-  if( millis() % 1000 == 1 ){
+  if( millis() % 100 == 1 ){
     if( flag ){
       flag = 0;
+      digitalWrite( HBpin, HB );
+      HB = !HB;
+/*
       adc.showConfigRegister();
       adc.setLowThreshold(0);
       Serial.println(adc.getLowThreshold());
       adc.setHighThreshold(32768);
       Serial.println(adc.getHighThreshold());
+*/
+      Serial.println(sqrt(ads_readings[0]));
     }
   }
   else{ flag = 1; }
@@ -97,12 +106,13 @@ void ADCpoll(){
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
   //Serial.println(current_channel);
-
+/*
     for(int i=0; i<4; i++){
       Serial.print(sqrt(ads_readings[i]));
       Serial.print(",");
-    }
+    } 
   Serial.println(cycle_count);
+*/
   cycle_count=0;
   }
   cycle_count++;
@@ -110,9 +120,15 @@ void ADCpoll(){
 
 void setADCconfig(){
   adc.setMode(ADS1115_MODE_SINGLESHOT);
-  adc.setRate(ADS1115_RATE_8);
+  adc.setRate(ADS1115_RATE_860);
   adc.setGain(ADS1115_PGA_4P096);
   adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
   adc.setComparatorPolarity(1);
   adc.setConversionReadyPinMode();
+}
+
+void resetI2C(){
+  Wire.beginTransmission(0);
+  Wire.write(0x06);
+  Wire.endTransmission();
 }
