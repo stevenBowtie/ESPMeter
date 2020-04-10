@@ -57,6 +57,7 @@ void setup() {
 
   //ADC config
   resetI2C();
+  delay(1);
   Wire.begin( ads_SDA, ads_SCL );
   pinMode(alertReadyPin,INPUT_PULLUP);
   attachInterrupt( alertReadyPin, rdy_interrupt, RISING );
@@ -79,6 +80,7 @@ void loop() {
     lastUpdate = millis();
       flag = 0;
       digitalWrite( HBpin, HB );
+      Serial.println( adc.sendConfig() );
       HB = !HB;
       Serial.println(analogAvg);
       Serial.println(sqrt(ads_readings[0]));
@@ -116,10 +118,11 @@ void ADCpoll(){
 void setADCconfig(){
   adc.setMode(ADS1115_MODE_SINGLESHOT);
   adc.setRate(ADS1115_RATE_860);
-  adc.setGain(ADS1115_PGA_4P096);
+  adc.setGain(ADS1115_PGA_6P144);
   adc.setComparatorQueueMode(ADS1115_COMP_QUE_ASSERT1);
   adc.setComparatorPolarity(1);
   adc.setConversionReadyPinMode();
+  adc.sendConfig();
 }
 
 void resetI2C(){

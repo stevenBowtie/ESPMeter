@@ -184,9 +184,12 @@ class ADS1115 {
         void setConversionReadyPinMode();
 
         //Modifying configuration bits
-        void setBit( uint8_t * configState, uint8_t bitNum, uint8_t data );
-        void setBits(uint8_t * configState, uint8_t bitStart, uint8_t length, uint8_t data);
-        void setBitsW( uint8_t * configState, uint8_t bitStart, uint8_t length, uint16_t data);
+        void setBit( uint8_t bitNum, uint8_t data );
+        void setBitW( uint16_t bitNum, uint16_t data );
+        void setBits( uint8_t bitStart, uint8_t length, uint8_t data );
+        void setBitsW( uint8_t bitStart, uint8_t length, uint16_t data );
+        bool sendConfig();
+
 
         // *_THRESH registers
         int16_t getLowThreshold();
