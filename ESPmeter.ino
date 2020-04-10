@@ -17,7 +17,9 @@ const char* sta_ssid = "CMIWIFI";
 #define HBpin  5
 bool HB = 0;
 int avg_factor = 10;
-float analogAvg = 0;
+unsigned long analogAvg = 0;
+unsigned long pollTime = 0;
+unsigned long lastUpdate = 0;
 long chan0 = 0;
 
 byte flag = 1;
@@ -69,25 +71,18 @@ void setup() {
 }
 
 void loop() {
-  //analogAvg=((analogAvg*avg_factor)+analogRead(A4))/(avg_factor+1);
   chan0 =sqrt(ads_readings[0])-1648;
+  pollTime = micros();
   ADCpoll(); 
-  if( millis() % 100 == 1 ){
-    if( flag ){
+  analogAvg=((analogAvg*avg_factor)+(micros()-pollTime))/(avg_factor+1);
+  if( millis() - lastUpdate > 100 ){
+    lastUpdate = millis();
       flag = 0;
       digitalWrite( HBpin, HB );
       HB = !HB;
-/*
-      adc.showConfigRegister();
-      adc.setLowThreshold(0);
-      Serial.println(adc.getLowThreshold());
-      adc.setHighThreshold(32768);
-      Serial.println(adc.getHighThreshold());
-*/
+      Serial.println(analogAvg);
       Serial.println(sqrt(ads_readings[0]));
     }
-  }
-  else{ flag = 1; }
 }
 
 void rdy_interrupt(){
