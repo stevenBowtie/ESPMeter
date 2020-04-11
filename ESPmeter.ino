@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "serverConfig.h"
 #include "config.h"
+#include <ESPmDNS.h>
 
 //ADS1115
 #include "lib\I2Cdev.h"
@@ -13,6 +14,8 @@ const char* ap_pass = "nopassword";
 const char* sta_ssid = "CMIWIFI";
 //const char* sta_pass = "supersecretpassword";
 #include "password.h"
+IPAddress apIP;
+IPAddress staIP;
 
 #define HBpin  5
 bool HB = 0;
@@ -44,8 +47,8 @@ void setup() {
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(sta_ssid,sta_pass);
   WiFi.softAP(ap_ssid, ap_pass);
-  IPAddress apIP = WiFi.softAPIP();
-  IPAddress staIP = WiFi.localIP();
+  apIP = WiFi.softAPIP();
+  staIP = WiFi.localIP();
   Serial.print("AP: ");
   Serial.println(apIP);
   Serial.print("STA: ");
@@ -69,6 +72,9 @@ void setup() {
   Serial.print("LowThreshold="); Serial.println(adc.getLowThreshold());
   #endif
   adc.triggerConversion();
+  getMacName();
+  MDNS.begin(baseMacChr);
+  MDNS.addService("http", "tcp", 80);  
 }
 
 void loop() {

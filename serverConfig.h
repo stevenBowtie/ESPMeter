@@ -12,9 +12,19 @@
 #endif
 
 const char* PARAM_MESSAGE = "message";
+const char * HOST = "ESPmeter";
+char baseMacChr[9] = {0};
 
 AsyncWebServer server(80);
 extern long chan0;
+extern IPAddress apIP;
+extern IPAddress staIP;
+
+void getMacName(){
+	uint8_t baseMac[6];
+	esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+	sprintf(baseMacChr, "%s%02X%02X", HOST, baseMac[4], baseMac[5]);
+}
 
 String convertPointer(char *startingPointer){
   String conversion;
@@ -42,6 +52,12 @@ void init_server_callbacks(){
       String message;
       message=chan0;
       request->send(200, "text/json", "{\"readings\":["+message+"]}");
+  });
+
+  server.on("/ip", HTTP_GET, [](AsyncWebServerRequest *request){
+      String message;
+      message=chan0;
+      request->send(200, "text/json", "{\"STA_IP\":["+ WiFi.localIP() +"],\"AP_IP\":["+ WiFi.softAPIP() +"}");
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
