@@ -40,6 +40,8 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 void init_server_callbacks(){
+  //server.serveStatic("/", SPIFFS, "/spiffs.htm");
+
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(SPIFFS,"/spiffs.htm", "text/html");
   });
@@ -55,9 +57,9 @@ void init_server_callbacks(){
   });
 
   server.on("/ip", HTTP_GET, [](AsyncWebServerRequest *request){
-      String message;
-      message=chan0;
-      request->send(200, "text/json", "{\"STA_IP\":["+ WiFi.localIP() +"],\"AP_IP\":["+ WiFi.softAPIP() +"}");
+      String staIP = WiFi.localIP().toString();
+      String apIP = WiFi.softAPIP().toString();
+      request->send(200, "text/json", "{\"STA_IP\":\""+ staIP +"\",\"AP_IP\":\""+ apIP +"\"}");
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {

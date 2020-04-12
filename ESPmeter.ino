@@ -17,6 +17,7 @@ const char* sta_ssid = "CMIWIFI";
 IPAddress apIP;
 IPAddress staIP;
 
+#define RANGE_THRESHOLD 10
 #define HBpin  5
 bool HB = 0;
 int avg_factor = 10;
@@ -34,6 +35,7 @@ const int alertReadyPin = 26;
 bool rdy_state = 1;
 float reading = 0;
 float thisSample;
+const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
 
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
@@ -86,10 +88,10 @@ void loop() {
     lastUpdate = millis();
       flag = 0;
       digitalWrite( HBpin, HB );
-      Serial.println( adc.sendConfig() );
+      //Serial.println( adc.sendConfig() );
       HB = !HB;
-      Serial.println(analogAvg);
-      Serial.println(sqrt(ads_readings[0]));
+      Serial.println( sqrt( ads_readings[0] ) );
+      //Serial.println( rangeMax[ adc.getGain() ] );
     }
 }
 
@@ -104,8 +106,7 @@ void ADCpoll(){
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
-    //setADCconfig();
-    //current_channel = (current_channel+1)%4;
+    //autorange( sqrt(ads_readings[current_channel]) );
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
   //Serial.println(current_channel);
@@ -135,4 +136,14 @@ void resetI2C(){
   Wire.beginTransmission(0);
   Wire.write(0x06);
   Wire.endTransmission();
+}
+
+void autorange(float ar_reading){
+  uint8_t nowGain = adc.getGain();
+  if( abs(ar_reading) >= rangeMax[ nowGain ] - RANGE_THRESHOLD ){
+    adc.setGain( max( 0, min(4, nowGain-1) ) );
+  }
+  if( abs(ar_reading) <= rangeMax[ nowGain ] ){
+    adc.setGain( max( 0, min(4, nowGain+1) ) );
+  }
 }

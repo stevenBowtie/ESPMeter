@@ -368,8 +368,6 @@ void ADS1115::setMultiplexer(uint8_t mux) {
  * @see ADS1115_CFG_PGA_LENGTH
  */
 uint8_t ADS1115::getGain() {
-    I2Cdev::readBitsW(devAddr, ADS1115_RA_CONFIG, ADS1115_CFG_PGA_BIT, ADS1115_CFG_PGA_LENGTH, buffer);
-    pgaMode=(uint8_t)buffer[0];
     return pgaMode;
 }
 /** Set programmable gain amplifier level.  
