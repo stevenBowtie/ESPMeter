@@ -91,7 +91,7 @@ void loop() {
       //Serial.println( adc.sendConfig() );
       HB = !HB;
       Serial.println( sqrt( ads_readings[0] ) );
-      //Serial.println( rangeMax[ adc.getGain() ] );
+      Serial.println( rangeMax[ adc.getGain() ] );
     }
 }
 
@@ -106,7 +106,7 @@ void ADCpoll(){
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
-    //autorange( sqrt(ads_readings[current_channel]) );
+    autorange( sqrt(ads_readings[current_channel]) );
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
   //Serial.println(current_channel);
@@ -143,7 +143,10 @@ void autorange(float ar_reading){
   if( abs(ar_reading) >= rangeMax[ nowGain ] - RANGE_THRESHOLD ){
     adc.setGain( max( 0, min(4, nowGain-1) ) );
   }
-  if( abs(ar_reading) <= rangeMax[ nowGain ] ){
+  else{
+    nowGain = max( 0, min(4, nowGain+1) );
+    if( abs(ar_reading) <= rangeMax[ nowGain ] ){
     adc.setGain( max( 0, min(4, nowGain+1) ) );
+    }
   }
 }
