@@ -80,7 +80,7 @@ void setup() {
 }
 
 void loop() {
-  chan0 =sqrt(ads_readings[0])-1648;
+  chan0 =sqrt(ads_readings[0]);
   pollTime = micros();
   ADCpoll(); 
   analogAvg=((analogAvg*avg_factor)+(micros()-pollTime))/(avg_factor+1);
