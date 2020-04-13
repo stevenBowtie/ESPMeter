@@ -39,7 +39,7 @@ const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
 
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
-const uint8_t muxBits[] = { ADS1115_MUX_P0_NG, ADS1115_MUX_P1_NG, ADS1115_MUX_P2_NG, ADS1115_MUX_P3_NG };
+const uint8_t muxBits[] = { ADS1115_MUX_P0_N1, ADS1115_MUX_P1_NG, ADS1115_MUX_P2_NG, ADS1115_MUX_P3_NG };
 
 unsigned long cycle_count = 0;
 
@@ -103,6 +103,7 @@ void ADCpoll(){
   if(rdy_state || cycle_count>1000){
     rdy_state = 0;
     thisSample = adc.getMilliVolts(false);
+    int8_t sampleSign = (thisSample > 0) ? 1 : -1 ;
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
