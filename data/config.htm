@@ -26,8 +26,10 @@
       jsonString=JSON.stringify(config);
       req = new XMLHttpRequest();
       url = '/save';
+      toSend = new FormData();
+      toSend.set("json",jsonString);
       req.open("POST",url);
-      req.send(jsonString);
+      req.send(toSend);
       req.onreadystatechange = (e) => {
         console.log(req.responseText);
       }

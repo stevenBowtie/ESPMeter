@@ -63,18 +63,20 @@ void init_server_callbacks(){
   });
 
   server.on("/config", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    Serial.println("/config requested");
     request->send(SPIFFS,"/config.htm", "text/html");
   });
 
-  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-      String message;
-      if (request->hasParam(PARAM_MESSAGE)) {
-          message = request->getParam(PARAM_MESSAGE)->value();
-      } else {
-          message = "No message sent";
+  server.on("/save", HTTP_POST, [] (AsyncWebServerRequest *request) {
+    Serial.print("Request received: params ");
+    int params = request->params();
+    Serial.println(params);
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(p->isPost()){
+        Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
       }
-      request->send(200, "text/plain", "Hello, GET: " + message);
+    }
+    request->send(200, "text/plain", "ACK");
   });
 
   server.on("/spiffs", HTTP_GET, [](AsyncWebServerRequest *request){

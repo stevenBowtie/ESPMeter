@@ -30,4 +30,12 @@ bool load_config(){
   Serial.println(wifi_mode);
   return 1;
 }
+
+bool save_config(){
+  //Add updates to file here
+  File file = SPIFFS.open("/config.json");
+  serializeJson(cfg, file);
+  file.close();
+  return 0;
+}
 #endif

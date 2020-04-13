@@ -11,7 +11,7 @@
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
-const char* sta_ssid = "CMIWIFI";
+//const char* sta_ssid = "CMIWIFI";
 //const char* sta_pass = "supersecretpassword";
 #include "password.h"
 IPAddress apIP;
