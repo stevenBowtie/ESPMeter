@@ -43,6 +43,8 @@ const uint8_t muxBits[] = { ADS1115_MUX_P0_N1, ADS1115_MUX_P1_NG, ADS1115_MUX_P2
 
 unsigned long cycle_count = 0;
 
+MeterConfig mc;
+
 void setup() {
   pinMode( HBpin, OUTPUT );
   Serial.begin(115200);
@@ -55,7 +57,7 @@ void setup() {
   Serial.println(apIP);
   Serial.print("STA: ");
   Serial.println(staIP);
-  load_config();   
+  mc.load_config();   
   server.begin();
   print_spiffs();
   init_server_callbacks();

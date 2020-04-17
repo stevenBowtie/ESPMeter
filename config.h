@@ -5,37 +5,40 @@
 #endif
 #include <ArduinoJson.h>
 
-const char * wifi_mode;
-const char * wifiAPssid;
-const char * wifiAPpass;
-DynamicJsonDocument cfg(200);
-//StaticJsonDocument<256> cfg;
+class MeterConfig{
+  public:
+    const char * wifi_mode;
+    const char * wifiAPssid;
+    const char * wifiAPpass;
+    //DynamicJsonDocument cfg(200);
+    StaticJsonDocument<256> cfg;
 
-bool load_config(){
-  Serial.println("Loading Config...");
-  if (!SPIFFS.begin(true)) { 
-    Serial.println("SPIFFS failure");
-    return 0; 
-  }
-  File file = SPIFFS.open("/config.json");
-  if(!file){ 
-    Serial.println("Failed to open config"); 
-    return 0; 
-  } 
-  DeserializationError error = deserializeJson(cfg, file);
-  if (error){ Serial.println(error.c_str()); }
-  wifi_mode = cfg["wifi_mode"];
-  wifiAPssid = cfg["wifiAPssid"];
-  wifiAPpass = cfg["wifiAPpass"];
-  Serial.println(wifi_mode);
-  return 1;
-}
+    bool load_config(){
+      Serial.println("Loading Config...");
+      if (!SPIFFS.begin(true)) { 
+        Serial.println("SPIFFS failure");
+        return 0; 
+      }
+      File file = SPIFFS.open("/config.json");
+      if(!file){ 
+        Serial.println("Failed to open config"); 
+        return 0; 
+      } 
+      DeserializationError error = deserializeJson(cfg, file);
+      if (error){ Serial.println(error.c_str()); }
+      wifi_mode = cfg["wifi_mode"];
+      wifiAPssid = cfg["wifiAPssid"];
+      wifiAPpass = cfg["wifiAPpass"];
+      Serial.println(wifi_mode);
+      return 1;
+    }
 
-bool save_config(){
-  //Add updates to file here
-  File file = SPIFFS.open("/config.json");
-  serializeJson(cfg, file);
-  file.close();
-  return 0;
-}
+    bool save_config(){
+      //Add updates to file here
+      File file = SPIFFS.open("/config.json");
+      serializeJson(cfg, file);
+      file.close();
+      return 0;
+    }
+};
 #endif
