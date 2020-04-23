@@ -17,7 +17,6 @@
 #define DispSDA 21
 #define DispSCL 22
 TwoWire DispWire = TwoWire(1);
-//U8G2_ST75320_JLX320240_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
 U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
  
 
