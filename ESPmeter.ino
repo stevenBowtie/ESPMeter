@@ -14,10 +14,11 @@
 
 //Display
 #include <U8g2lib.h>
-#define DispSDA 25
-#define DispSCL 26
+#define DispSDA 21
+#define DispSCL 22
 TwoWire DispWire = TwoWire(1);
-U8G2_ST75320_JLX320240_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
+//U8G2_ST75320_JLX320240_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
+U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
  
 
 const char* ap_ssid = "ESPMeter";
@@ -72,7 +73,7 @@ void setup() {
   init_server_callbacks();
 
   //Display
-  DispWire.begin( DispSDA, DispSCL );
+  //DispWire.begin( DispSDA, DispSCL );
   disp.begin();
 
   //ADC config
