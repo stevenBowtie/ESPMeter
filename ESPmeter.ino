@@ -2,12 +2,23 @@
 #include "serverConfig.h"
 #include "config.h"
 #include <ESPmDNS.h>
+#include <Wire.h>
 
 //ADS1115
 #include "lib\I2Cdev.h"
 #include "lib\I2Cdev.cpp"
 #include "lib\ADS1115.h"
 #include "lib\ADS1115.cpp"
+#define SDApin  14
+#define SCLpin  27
+
+//Display
+#include <U8g2lib.h>
+#define DispSDA 25
+#define DispSCL 26
+TwoWire DispWire = TwoWire(1);
+U8G2_ST75320_JLX320240_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
+ 
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
@@ -29,8 +40,6 @@ long chan0 = 0;
 byte flag = 1;
 
 ADS1115 adc(ADS1115_DEFAULT_ADDRESS);
-const int ads_SDA = 14;
-const int ads_SCL = 27;
 const int alertReadyPin = 26;
 bool rdy_state = 1;
 float reading = 0;
@@ -62,10 +71,14 @@ void setup() {
   print_spiffs();
   init_server_callbacks();
 
+  //Display
+  DispWire.begin( DispSDA, DispSCL );
+  disp.begin();
+
   //ADC config
   resetI2C();
   delay(1);
-  Wire.begin( ads_SDA, ads_SCL );
+  Wire.begin( SDApin, SCLpin );
   pinMode(alertReadyPin,INPUT_PULLUP);
   attachInterrupt( alertReadyPin, rdy_interrupt, RISING );
   adc.initialize();
@@ -76,6 +89,8 @@ void setup() {
   Serial.print("LowThreshold="); Serial.println(adc.getLowThreshold());
   #endif
   adc.triggerConversion();
+
+  //mDNS
   getMacName();
   MDNS.begin(baseMacChr);
   MDNS.addService("http", "tcp", 80);  
@@ -95,6 +110,7 @@ void loop() {
       Serial.println( sqrt( ads_readings[0] ) );
       Serial.println( rangeMax[ adc.getGain() ] );
     }
+  updateDisplay();
 }
 
 void rdy_interrupt(){
@@ -152,4 +168,12 @@ void autorange(float ar_reading){
     adc.setGain( max( 0, min(4, nowGain+1) ) );
     }
   }
+}
+
+void updateDisplay(){
+  disp.firstPage();
+  do {
+    disp.setFont(u8g2_font_ncenB14_tr);
+    disp.drawStr(0,24,"ESPmeter");
+  } while ( disp.nextPage() );
 }
