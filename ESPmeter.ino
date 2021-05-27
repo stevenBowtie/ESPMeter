@@ -18,7 +18,11 @@
 #define DispSCL 22
 TwoWire DispWire = TwoWire(1);
 U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
- 
+
+//MQTT
+#include <WiFiClient.h>
+#include "lib/pubsubclient/src/PubSubClient.h"
+#include "lib/pubsubclient/src/PubSubClient.cpp"
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
@@ -48,9 +52,26 @@ const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
 
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
-const uint8_t muxBits[] = { ADS1115_MUX_P0_N1, ADS1115_MUX_P1_NG, ADS1115_MUX_P2_NG, ADS1115_MUX_P3_NG };
+const uint8_t muxBits[] = { ADS1115_MUX_P0_N3, ADS1115_MUX_P1_N3, ADS1115_MUX_P2_N3 };
 
 unsigned long cycle_count = 0;
+
+//MQTT
+WiFiClient wifi_client;
+PubSubClient mqtt_client( wifi_client );
+IPAddress mqtt_server( 10,41,2,18 ); //Grafanflux
+char toString[16] = { 0 };
+unsigned long lastPrint = 0;
+
+void mqtt_publish_float( char topic[], float value ){
+  dtostrf( value, 10, 2, toString );
+  if( !mqtt_client.connected() ){ 
+    mqtt_client.connect( baseMacChr );
+  }
+  char topic_buf[50] = {0};
+  sprintf( topic_buf, "ESPMeter/%s/%s", baseMacChr, topic );
+  mqtt_client.publish( topic_buf, toString );
+}
 
 MeterConfig mc;
 
@@ -94,6 +115,10 @@ void setup() {
   getMacName();
   MDNS.begin(baseMacChr);
   MDNS.addService("http", "tcp", 80);  
+
+  //MQTT
+  mqtt_client.setServer( mqtt_server, 1883 );
+  mqtt_client.connect( baseMacChr );
 }
 
 void loop() {
@@ -111,6 +136,17 @@ void loop() {
       Serial.println( rangeMax[ adc.getGain() ] );
     }
   updateDisplay();
+  mqtt_loop();
+}
+
+void mqtt_loop(){
+  if( millis() - lastPrint > 200 ){
+    mqtt_publish_float( "v0", sqrt( ads_readings[0] ) * 111.44 );
+    mqtt_publish_float( "v1", sqrt( ads_readings[1] ) );
+    mqtt_publish_float( "v2", sqrt( ads_readings[2] ) );
+    mqtt_publish_float( "v3", sqrt( ads_readings[3] ) );
+    lastPrint = millis();
+  }
 }
 
 void rdy_interrupt(){
@@ -126,6 +162,8 @@ void ADCpoll(){
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
     autorange( sqrt(ads_readings[current_channel]) );
+    current_channel++;
+    if( current_channel > 2 ){ current_channel = 0; }
     adc.setMultiplexer( muxBits[current_channel] );
     adc.triggerConversion();
   //Serial.println(current_channel);
