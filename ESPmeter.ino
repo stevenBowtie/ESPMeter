@@ -34,7 +34,9 @@ IPAddress staIP;
 
 #define RANGE_THRESHOLD 10
 #define HBpin  5
+#define VBATT_IN 34
 bool HB = 0;
+float vbatt = 0;
 int avg_factor = 10;
 unsigned long analogAvg = 0;
 unsigned long pollTime = 0;
@@ -77,6 +79,7 @@ MeterConfig mc;
 
 void setup() {
   pinMode( HBpin, OUTPUT );
+  pinMode( VBATT_IN, INPUT );
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(sta_ssid,sta_pass);
@@ -132,9 +135,10 @@ void loop() {
       digitalWrite( HBpin, HB );
       //Serial.println( adc.sendConfig() );
       HB = !HB;
-      Serial.println( sqrt( ads_readings[0] ) );
-      Serial.println( rangeMax[ adc.getGain() ] );
+      Serial.print( "VBatt=" );
+      Serial.println( vbatt );
     }
+  readBatt(); 
   updateDisplay();
   mqtt_loop();
 }
@@ -144,9 +148,13 @@ void mqtt_loop(){
     mqtt_publish_float( "v0", sqrt( ads_readings[0] ) * 111.44 );
     mqtt_publish_float( "v1", sqrt( ads_readings[1] ) );
     mqtt_publish_float( "v2", sqrt( ads_readings[2] ) );
-    mqtt_publish_float( "v3", sqrt( ads_readings[3] ) );
+    mqtt_publish_float( "batt", vbatt );
     lastPrint = millis();
   }
+}
+
+void readBatt(){
+  vbatt = ((vbatt*avg_factor) + (analogRead( VBATT_IN ) * 0.00175)) / (avg_factor+1);
 }
 
 void rdy_interrupt(){
