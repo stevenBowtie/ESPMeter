@@ -51,9 +51,9 @@ bool rdy_state = 1;
 float reading = 0;
 float thisSample;
 const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
-
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
+int8_t reading_sign[] = { 1, 1, 1, 1 };
 const uint8_t muxBits[] = { ADS1115_MUX_P0_N3, ADS1115_MUX_P1_N3, ADS1115_MUX_P2_N3 };
 
 unsigned long cycle_count = 0;
@@ -145,9 +145,9 @@ void loop() {
 
 void mqtt_loop(){
   if( millis() - lastPrint > 200 ){
-    mqtt_publish_float( "v0", sqrt( ads_readings[0] ) * 111.44 );
-    mqtt_publish_float( "v1", sqrt( ads_readings[1] ) );
-    mqtt_publish_float( "v2", sqrt( ads_readings[2] ) );
+    mqtt_publish_float( "v0", reading_sign[0] * sqrt( ads_readings[0] ) * 111.44 );
+    mqtt_publish_float( "v1", reading_sign[1] * sqrt( ads_readings[1] ) );
+    mqtt_publish_float( "v2", reading_sign[2] * sqrt( ads_readings[2] ) );
     mqtt_publish_float( "batt", vbatt );
     lastPrint = millis();
   }
@@ -165,7 +165,7 @@ void ADCpoll(){
   if(rdy_state || cycle_count>1000){
     rdy_state = 0;
     thisSample = adc.getMilliVolts(false);
-    int8_t sampleSign = (thisSample > 0) ? 1 : -1 ;
+    reading_sign[current_channel] = (thisSample > 0) ? 1 : -1 ;
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
       ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
