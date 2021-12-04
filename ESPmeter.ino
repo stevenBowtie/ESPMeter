@@ -143,6 +143,20 @@ void loop() {
   mqtt_loop();
 }
 
+void battery_test(){
+  button = digitalRead( BATT_BUTTON ) ? 
+  if( button && voltage > voltage_threshold ){
+    batt_discharge = 1;
+  }
+  if( batt_discharge and voltage > voltage_threshold ){
+    digitalWrite( RELAY_PIN, 1 );
+  }
+  else{
+    digitalWrite( RELAY_PIN, 0 );
+    batt_discharge = 0;
+  }
+}
+
 void mqtt_loop(){
   if( millis() - lastPrint > 200 ){
     mqtt_publish_float( "v0", reading_sign[0] * sqrt( ads_readings[0] ) * 111.44 );
