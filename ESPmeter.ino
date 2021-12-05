@@ -5,15 +5,15 @@
 #include <Wire.h>
 
 //ADS1115
-#include "lib\I2Cdev.h"
-#include "lib\I2Cdev.cpp"
-#include "lib\ADS1115.h"
-#include "lib\ADS1115.cpp"
+#include "src\I2Cdev.h"
+#include "src\I2Cdev.cpp"
+#include "src\ADS1115.h"
+#include "src\ADS1115.cpp"
 #define SDApin  14
 #define SCLpin  27
 
 //Display
-#include <U8g2lib.h>
+//#include <U8g2lib.h>
 #define DispSDA 21
 #define DispSCL 22
 TwoWire DispWire = TwoWire(1);
@@ -21,8 +21,8 @@ U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
 
 //MQTT
 #include <WiFiClient.h>
-#include "lib/pubsubclient/src/PubSubClient.h"
-#include "lib/pubsubclient/src/PubSubClient.cpp"
+#include "src/pubsubclient/src/PubSubClient.h"
+#include "src/pubsubclient/src/PubSubClient.cpp"
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
@@ -53,6 +53,7 @@ float thisSample;
 const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
+float ads_scaling[] = { 111.44, 0, 0 };
 int8_t reading_sign[] = { 1, 1, 1, 1 };
 const uint8_t muxBits[] = { ADS1115_MUX_P0_N3, ADS1115_MUX_P1_N3, ADS1115_MUX_P2_N3 };
 
@@ -144,7 +145,10 @@ void loop() {
 }
 
 void battery_test(){
-  button = digitalRead( BATT_BUTTON ) ? 
+  buttonCount = digitalRead( BATT_BUTTON ) ? button++ : button-- ;
+  buttonCount = (buttonCount < 0) ? buttonCount : 0;
+  buttonCount = (buttonCount > 200) ? buttonCount : 200;
+  button = (buttonCount > 100) ? 1 : 0;
   if( button && voltage > voltage_threshold ){
     batt_discharge = 1;
   }
@@ -157,11 +161,15 @@ void battery_test(){
   }
 }
 
+float calc_reading( int chnl ){
+    return reading_sign[chn] * sqrt( ads_readings[chn] ) * ads_scaling[chn];
+}
+
 void mqtt_loop(){
   if( millis() - lastPrint > 200 ){
-    mqtt_publish_float( "v0", reading_sign[0] * sqrt( ads_readings[0] ) * 111.44 );
-    mqtt_publish_float( "v1", reading_sign[1] * sqrt( ads_readings[1] ) );
-    mqtt_publish_float( "v2", reading_sign[2] * sqrt( ads_readings[2] ) );
+    mqtt_publish_float( "v0", calc_reading(0) );
+    mqtt_publish_float( "v1", calc_reading(1) );
+    mqtt_publish_float( "v2", calc_reading(2) );
     mqtt_publish_float( "batt", vbatt );
     lastPrint = millis();
   }
