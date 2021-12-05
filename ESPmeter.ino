@@ -53,6 +53,7 @@ float thisSample;
 const float rangeMax[] = { 6144, 4096, 1024, 512, 256 } ;
 uint8_t current_channel = 0;
 float ads_readings[] = { 0, 0, 0, 0 };
+float ads_scaling[] = { 111.44, 0, 0 };
 int8_t reading_sign[] = { 1, 1, 1, 1 };
 const uint8_t muxBits[] = { ADS1115_MUX_P0_N3, ADS1115_MUX_P1_N3, ADS1115_MUX_P2_N3 };
 
@@ -64,6 +65,14 @@ PubSubClient mqtt_client( wifi_client );
 IPAddress mqtt_server( 10,41,2,18 ); //Grafanflux
 char toString[16] = { 0 };
 unsigned long lastPrint = 0;
+
+#define BATT_BUTTON 15
+#define RELAY_PIN 2
+int buttonCount = 0;
+bool button = 0;
+bool batt_discharge = 0;
+float voltage = 0;
+float voltage_threshold = 11.1;
 
 void mqtt_publish_float( char topic[], float value ){
   dtostrf( value, 10, 2, toString );
@@ -79,6 +88,7 @@ MeterConfig mc;
 
 void setup() {
   pinMode( HBpin, OUTPUT );
+  pinMode( BATT_BUTTON, INPUT_PULLUP );
   pinMode( VBATT_IN, INPUT );
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
@@ -144,7 +154,11 @@ void loop() {
 }
 
 void battery_test(){
-  button = digitalRead( BATT_BUTTON ) ? 
+  buttonCount = digitalRead( BATT_BUTTON ) ? buttonCount++ : buttonCount-- ;
+  buttonCount = (buttonCount < 0) ? buttonCount : 0;
+  buttonCount = (buttonCount > 200) ? buttonCount : 200;
+  button = (buttonCount > 100) ? 1 : 0;
+  voltage = calc_reading( 0 );
   if( button && voltage > voltage_threshold ){
     batt_discharge = 1;
   }
@@ -157,11 +171,15 @@ void battery_test(){
   }
 }
 
+float calc_reading( int chnl ){
+  return reading_sign[chnl] * sqrt( ads_readings[chnl] ) * ads_scaling[chnl];
+}
+
 void mqtt_loop(){
   if( millis() - lastPrint > 200 ){
-    mqtt_publish_float( "v0", reading_sign[0] * sqrt( ads_readings[0] ) * 111.44 );
-    mqtt_publish_float( "v1", reading_sign[1] * sqrt( ads_readings[1] ) );
-    mqtt_publish_float( "v2", reading_sign[2] * sqrt( ads_readings[2] ) );
+    mqtt_publish_float( "v0", calc_reading(0) );
+    mqtt_publish_float( "v1", calc_reading(1) );
+    mqtt_publish_float( "v2", calc_reading(2) );
     mqtt_publish_float( "batt", vbatt );
     lastPrint = millis();
   }
