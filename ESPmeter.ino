@@ -66,6 +66,14 @@ IPAddress mqtt_server( 10,41,2,18 ); //Grafanflux
 char toString[16] = { 0 };
 unsigned long lastPrint = 0;
 
+#define BATT_BUTTON 15
+#define RELAY_PIN 2
+int buttonCount = 0;
+bool button = 0;
+bool batt_discharge = 0;
+float voltage = 0;
+float voltage_threshold = 11.1;
+
 void mqtt_publish_float( char topic[], float value ){
   dtostrf( value, 10, 2, toString );
   if( !mqtt_client.connected() ){ 
@@ -80,6 +88,7 @@ MeterConfig mc;
 
 void setup() {
   pinMode( HBpin, OUTPUT );
+  pinMode( BATT_BUTTON, INPUT_PULLUP );
   pinMode( VBATT_IN, INPUT );
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
@@ -145,10 +154,11 @@ void loop() {
 }
 
 void battery_test(){
-  buttonCount = digitalRead( BATT_BUTTON ) ? button++ : button-- ;
+  buttonCount = digitalRead( BATT_BUTTON ) ? buttonCount++ : buttonCount-- ;
   buttonCount = (buttonCount < 0) ? buttonCount : 0;
   buttonCount = (buttonCount > 200) ? buttonCount : 200;
   button = (buttonCount > 100) ? 1 : 0;
+  voltage = calc_reading( 0 );
   if( button && voltage > voltage_threshold ){
     batt_discharge = 1;
   }
@@ -162,7 +172,7 @@ void battery_test(){
 }
 
 float calc_reading( int chnl ){
-    return reading_sign[chn] * sqrt( ads_readings[chn] ) * ads_scaling[chn];
+  return reading_sign[chnl] * sqrt( ads_readings[chnl] ) * ads_scaling[chnl];
 }
 
 void mqtt_loop(){
