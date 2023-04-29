@@ -194,14 +194,15 @@ void rdy_interrupt(){
 }
 
 void ADCpoll(){       
-  if(rdy_state || cycle_count>1000){
+  if( rdy_state || cycle_count>1000 ){
     rdy_state = 0;
     thisSample = adc.getMilliVolts(false);
     reading_sign[current_channel] = (thisSample > 0) ? 1 : -1 ;
     analogAvg = ads_readings[current_channel];
     ads_readings[current_channel] = 
-      ((analogAvg*avg_factor)+pow(thisSample,2)) / (avg_factor+1);
+      ( (analogAvg * avg_factor) + pow( thisSample,2 ) ) / (avg_factor + 1);
     autorange( sqrt(ads_readings[current_channel]) );
+
     current_channel++;
     if( current_channel > 2 ){ current_channel = 0; }
     adc.setMultiplexer( muxBits[current_channel] );
@@ -243,7 +244,7 @@ void autorange(float ar_reading){
   else{
     nowGain = max( 0, min(4, nowGain+1) );
     if( abs(ar_reading) <= rangeMax[ nowGain ] ){
-    adc.setGain( max( 0, min(4, nowGain+1) ) );
+      adc.setGain( max( 0, min(4, nowGain+1) ) );
     }
   }
 }
