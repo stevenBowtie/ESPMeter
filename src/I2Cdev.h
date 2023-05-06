@@ -45,6 +45,7 @@ THE SOFTWARE.
 ===============================================
 */
 
+#include <Arduino.h>
 #ifndef _I2CDEV_H_
 #define _I2CDEV_H_
 

@@ -34,6 +34,8 @@ THE SOFTWARE.
 ===============================================
 */
 
+#include <Arduino.h>
+#include "I2Cdev.h"
 #ifndef _ADS1115_H_
 #define _ADS1115_H_
 

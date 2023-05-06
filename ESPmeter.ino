@@ -6,19 +6,21 @@
 
 
 //ADS1115
-#include "src\I2Cdev.h"
-#include "src\I2Cdev.cpp"
-#include "src\ADS1115.h"
-#include "src\ADS1115.cpp"
+#include "src/I2Cdev.h"
+//#include "src\I2Cdev.cpp"
+#include "src/ADS1115.h"
+//#include "src\ADS1115.cpp"
 #define SDApin  14
 #define SCLpin  27
 
+/*
 //Display
 #include <U8g2lib.h>
 #define DispSDA 21
 #define DispSCL 22
 TwoWire DispWire = TwoWire(1);
 U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
+*/
 
 //MQTT
 #include <WiFiClient.h>
@@ -107,9 +109,11 @@ void setup() {
   print_spiffs();
   init_server_callbacks();
 
+/*
   //Display
   //DispWire.begin( DispSDA, DispSCL );
   disp.begin();
+*/
 
   //ADC config
   resetI2C();
@@ -151,7 +155,7 @@ void loop() {
       Serial.println( vbatt );
     }
   readBatt(); 
-  updateDisplay();
+  //updateDisplay();
   mqtt_loop();
 }
 
@@ -255,6 +259,7 @@ void autorange(float ar_reading){
   }
 }
 
+/*
 void updateDisplay(){
   disp.firstPage();
   do {
@@ -262,3 +267,4 @@ void updateDisplay(){
     disp.drawStr(0,24,"ESPmeter");
   } while ( disp.nextPage() );
 }
+*/
