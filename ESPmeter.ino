@@ -21,8 +21,7 @@ U8G2_SSD1306_128X64_NONAME_1_SW_I2C disp( U8G2_R0, DispSCL, DispSDA );
 
 //MQTT
 #include <WiFiClient.h>
-#include "src/pubsubclient/src/PubSubClient.h"
-#include "src/pubsubclient/src/PubSubClient.cpp"
+#include <PubSubClient.h>
 
 const char* ap_ssid = "ESPMeter";
 const char* ap_pass = "nopassword";
@@ -31,6 +30,8 @@ const char* ap_pass = "nopassword";
 #include "password.h"
 IPAddress apIP;
 IPAddress staIP;
+
+#include "src\battcon.h"
 
 #define RANGE_THRESHOLD 10
 #define HBpin  5
