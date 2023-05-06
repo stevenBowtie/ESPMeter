@@ -11,10 +11,16 @@ class batt_con{
     unsigned long charge_timeout;        // Terminate charge if this timeout is reached
     float discharge_voltage ;            // Discharge termination voltage
     float discharge_current ;            // Discharge termination current
+	float last_reading;
     unsigned long charge_begin ;         // Discharge time limit
     unsigned long discharge_time ;       // Discharge time limit
     unsigned long dwell_time ;           // How long to wait in Dwell period
+    unsigned long dwell_time_threshold ; // How long to wait in Dwell period
     unsigned long dwell_ended ;          // Time that dwell period ended
+    unsigned long dwell_poll_rate = 30000 ; // How often to check the change in voltage
+	unsigned long dwell_voltage_threshold  = 0.1; // Minimum voltage change to end dwell       
+	unsigned long last_dwell_poll;       
+	unsigned long lastChange;       
     unsigned long charge_ended ;         // Time that charge ended
 
     enum reason { NONE, CHARGE_CURRENT, CHARGE_TIMEOUT, 
@@ -52,7 +58,7 @@ class batt_con{
 
     void charge(){
         digitalWrite( charge_output_pin, 1 ) ;
-        if( batt_volage > charge_voltage && batt_current < charge_current ){ 
+        if( batt_voltage > charge_voltage && batt_current < charge_current ){ 
             current_state = DWELL ; 
             charge_ended = millis() ;
             charge_end_reason = CHARGE_CURRENT;
@@ -68,14 +74,14 @@ class batt_con{
 
     void dwell(){
       //Wait until battery is stable or timeout
-      if( millis() - charge_ended > dwell_max_time ){
+      if( millis() - charge_ended > dwell_time ){
         current_state = DISCHARGE ;
         dwell_ended = millis() ;
         dwell_end_reason = DWELL_MAX ;
       }
       
       //Only sample at the poll rate to allow some change between samples
-      if( millis() - last_time > dwell_poll_rate ){     
+      if( millis() - last_dwell_poll > dwell_poll_rate ){     
         if( batt_voltage - last_reading > dwell_voltage_threshold ){
           lastChange = millis() ;
           last_reading = batt_voltage ;
@@ -94,10 +100,12 @@ class batt_con{
     }
 
     float read_voltage(){
-
+		float voltage;
+		return voltage;
     }
 
     float read_current(){
-
+		float current;
+		return current;
     }
-}
+};

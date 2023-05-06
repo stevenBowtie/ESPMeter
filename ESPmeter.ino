@@ -4,6 +4,7 @@
 #include <ESPmDNS.h>
 #include <Wire.h>
 
+
 //ADS1115
 #include "src\I2Cdev.h"
 #include "src\I2Cdev.cpp"
@@ -13,7 +14,7 @@
 #define SCLpin  27
 
 //Display
-//#include <U8g2lib.h>
+#include <U8g2lib.h>
 #define DispSDA 21
 #define DispSCL 22
 TwoWire DispWire = TwoWire(1);
@@ -155,7 +156,11 @@ void loop() {
 }
 
 void battery_test(){
-  buttonCount = digitalRead( BATT_BUTTON ) ? buttonCount++ : buttonCount-- ;
+  if ( digitalRead( BATT_BUTTON ) ){
+     buttonCount++;
+   } else{ 
+     buttonCount-- ;
+   }
   buttonCount = (buttonCount < 0) ? buttonCount : 0;
   buttonCount = (buttonCount > 200) ? buttonCount : 200;
   button = (buttonCount > 100) ? 1 : 0;

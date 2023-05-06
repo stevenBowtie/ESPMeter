@@ -3,7 +3,7 @@
 #ifndef SPIFFS
 #include <SPIFFS.h>
 #endif
-//#include <ArduinoJson.h>
+#include <ArduinoJson.h>
 
 class MeterConfig{
   public:
