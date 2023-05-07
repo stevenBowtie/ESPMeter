@@ -7,12 +7,9 @@
 
 //ADS1115
 #include "src/I2Cdev.h"
-//#include "src\I2Cdev.cpp"
 #include "src/ADS1115.h"
-//#include "src\ADS1115.cpp"
 #define SDApin  14
 #define SCLpin  27
-
 
 //Display
 #include <U8g2lib.h>
@@ -33,7 +30,7 @@ const char* ap_pass = "nopassword";
 IPAddress apIP;
 IPAddress staIP;
 
-#include "src\battcon.h"
+#include "src/battcon.h"
 
 #define RANGE_THRESHOLD 10
 #define HBpin  5
@@ -69,13 +66,8 @@ IPAddress mqtt_server( 10,41,2,18 ); //Grafanflux
 char toString[16] = { 0 };
 unsigned long lastPrint = 0;
 
-#define BATT_BUTTON 15
-#define RELAY_PIN 2
-int buttonCount = 0;
-bool button = 0;
-bool batt_discharge = 0;
-float voltage = 0;
-float voltage_threshold = 11.1;
+//Battery Conditioning
+BattCon batt;
 
 void mqtt_publish_float( char topic[], float value ){
   dtostrf( value, 10, 2, toString );
@@ -91,7 +83,6 @@ MeterConfig mc;
 
 void setup() {
   pinMode( HBpin, OUTPUT );
-  pinMode( BATT_BUTTON, INPUT_PULLUP );
   pinMode( VBATT_IN, INPUT );
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
@@ -135,6 +126,14 @@ void setup() {
   //MQTT
   mqtt_client.setServer( mqtt_server, 1883 );
   mqtt_client.connect( baseMacChr );
+
+  //Battery Conditioning
+  batt.charge_voltage = 14.4;
+  batt.charge_current = 0.4;
+  batt.charge_timeout = 240000;
+  batt.discharge_voltage = 11.1;
+  batt.discharge_current = 1.0;
+  batt.battcon_setup();
 }
 
 void loop() {
@@ -156,29 +155,7 @@ void loop() {
   mqtt_loop();
 }
 
-void battery_test(){
-  if ( digitalRead( BATT_BUTTON ) ){
-     buttonCount++;
-   } else{ 
-     buttonCount-- ;
-   }
-  buttonCount = (buttonCount < 0) ? buttonCount : 0;
-  buttonCount = (buttonCount > 200) ? buttonCount : 200;
-  button = (buttonCount > 100) ? 1 : 0;
-  voltage = calc_reading( 0 );
-  if( button && voltage > voltage_threshold ){
-    batt_discharge = 1;
-  }
-  if( batt_discharge and voltage > voltage_threshold ){
-    digitalWrite( RELAY_PIN, 1 );
-  }
-  else{
-    digitalWrite( RELAY_PIN, 0 );
-    batt_discharge = 0;
-  }
-}
-
-float calc_reading( int chnl ){
+ float calc_reading( int chnl ){
   return reading_sign[chnl] * sqrt( ads_readings[chnl] ) * ads_scaling[chnl];
 }
 

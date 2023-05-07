@@ -1,4 +1,9 @@
-class batt_con{
+#ifndef _BATTCON
+#define _BATTCON
+#include <Arduino.h>
+#pragma message("Loaded battcon.h")
+
+class BattCon{
 
     public:
     enum state { CHARGE, DISCHARGE, DWELL, STOP } ;
@@ -109,3 +114,4 @@ class batt_con{
 		return current;
     }
 };
+#endif
