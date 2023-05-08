@@ -10,6 +10,7 @@
 #ifndef config_h
 #include "config.h"
 #endif
+#include "src/battcon.h"
 
 const char* PARAM_MESSAGE = "message";
 const char * HOST = "ESPmeter";
@@ -19,6 +20,7 @@ AsyncWebServer server(80);
 extern long chan0;
 extern IPAddress apIP;
 extern IPAddress staIP;
+extern BattCon batt;
 
 void getMacName(){
 	uint8_t baseMac[6];
@@ -56,6 +58,11 @@ void init_server_callbacks(){
       request->send(200, "text/json", "{\"readings\":["+message+"]}");
   });
 
+  server.on("/batt_status", HTTP_GET, [](AsyncWebServerRequest *request){
+      String message;
+      message = batt.current_state;
+      request->send(200, "text/json", "{\"readings\":["+message+"]}");
+  });
   server.on("/ip", HTTP_GET, [](AsyncWebServerRequest *request){
       String staIP = WiFi.localIP().toString();
       String apIP = WiFi.softAPIP().toString();
