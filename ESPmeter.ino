@@ -97,6 +97,7 @@ void setup() {
   mc.load_config();   
   server.begin();
   print_spiffs();
+  server_setup();
   init_server_callbacks();
 
   //Display
@@ -127,12 +128,6 @@ void setup() {
   mqtt_client.setServer( mqtt_server, 1883 );
   mqtt_client.connect( baseMacChr );
 
-  //Battery Conditioning
-  batt.charge_voltage = 14.4;
-  batt.charge_current = 0.4;
-  batt.charge_timeout = 240000;
-  batt.discharge_voltage = 11.1;
-  batt.discharge_current = 1.0;
   batt.battcon_setup();
 }
 
