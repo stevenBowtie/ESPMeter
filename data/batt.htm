@@ -1,0 +1,100 @@
+<html>
+<head>
+<script type="text/javascript">
+cfg = 
+function update(){
+  rqst = new XMLHttpRequest();
+  rqst.open("GET","/light/set?s="+JSON.stringify(light));
+  rqst.send();
+}
+
+function fillToConfig( cfg_json ){
+  for( var key in cfg_json ){
+    if( document.getElementById(key) ){
+      cfg_json[key] = document.getElementById(key).value;
+    }
+  }
+  light["sledEnabled"] = (document.getElementById("sledEnabled").checked)?1:0;
+}
+
+function fillFromConfig( cfg_json ){
+  for( var key in cfg_json ){
+    if( document.getElementById(key) ){
+      document.getElementById(key).value = cfg_json[key];
+    }
+  }
+  document.getElementById("enableBrilliance").checked=light["enableShow"];
+  document.getElementById("sledEnabled").checked=light["sledEnabled"];
+  paletteFields = document.getElementsByClassName("palette");
+  paletteIndex = 0;
+  for( var key in light["palette"] ){
+    for( var value in light["palette"][key] ){
+      paletteFields[paletteIndex].value = light["palette"][key][value];
+      paletteIndex++;
+    }
+  }
+}
+
+function getConfigLoaded(){
+  if( cfgrqst.readyState == 4 ){
+    cfg=JSON.parse( cfgrqst.responseText )
+    fillFromConfig( cfg ); 
+    document.getElementById("deviceID").innerHTML=cfg.name;
+    notify("Loaded");
+  }
+}
+
+function attachListeners(){
+  elements = document.getElementsByTagName("input");
+  for ( inputs in elements ){
+    try{
+      elements[inputs].addEventListener("change", set );
+      elements[inputs].disable
+    }
+    catch( err ){ }
+  }
+}
+
+function getConfig(){
+  cfgrqst = new XMLHttpRequest();
+  cfgrqst.onerror = error_hndl;
+  cfgrqst.timeout = 2000;
+  cfgrqst.ontimeout = error_hndl;
+  cfgrqst.open( "GET","/config/get" );
+  cfgrqst.onreadystatechange = getConfigLoaded;
+  cfgrqst.send(); 
+}
+
+function dateFromMillis( millis ){
+  return new Date( Date.now() + millis );
+}
+
+
+function runOnLoad(){
+  getConfig();
+  attachListeners();
+}
+</script>
+</head>
+<body style="font-family:sans-serif;background-color:#222222;color:#dddddd;text-decoration:none;" onLoad="runOnLoad()" >
+<div style="background-color:#ff8000; display:block; margin:5; padding:2;" id="statusBar">
+  <span style="color:#000000;margin-right:10" id="deviceID">Connecting...</span>
+  <span style="color:#000000;margin-right:10" id="deviceID">Status:</span>
+  <span style="color:#000000;margin-right:10" id="status"></span>
+</div>
+<table>
+  <tr><td>Charged Voltage (V): </td><td><input id="charge_voltage" type="text" /></td></tr>
+  <tr><td>Charge Current (A): </td><td><input id="charge_current" type="text" /></td></tr>
+  <tr><td>Charge Timeout (millis): </td><td><input id="charge_timeout" type="text" /></td></tr>
+  <tr><td title="Maximum time system is allowed to stay in Dwell">Dwell Time Max (millis): </td>
+      <td><input id="" type="text" /></td></tr>
+  <tr><td title="How long the voltage needs to be steady to end dwell">Dwell Time Constant (millis): </td>
+      <td><input id="" type="text" /></td></tr>
+  <tr><td>Dwell Voltage Threshold (millis): </td><td><input id="" type="text" /></td></tr>
+  <tr><td>Discharge Voltage (V): </td><td><input id="discharge_voltage" type="text" /></td></tr>
+  <tr><td>Discharge Current (A): </td><td><input id="discharge_current" type="text" /></td></tr>
+  <tr><td>Discharge Time (millis): </td><td><input id="discharge_time" type="text" /></td></tr>
+</table>
+
+</body>
+</html>
